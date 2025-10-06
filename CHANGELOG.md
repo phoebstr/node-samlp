@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 8.0.0 (2025-10-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Requires NodeJS >= 12
+
+See https://github.com/auth0/node-saml/releases/tag/v2.0.0
+* Fix dependency security issues (#114)
+* fix npm audit and library upgrades
+* remove ci for node v4, 6, 8, add 14
+
+### Features
+
+* add support for per-participant bindings during SLO ([#135](https://github.com/auth0/node-samlp/issues/135)) ([46305eb](https://github.com/auth0/node-samlp/commit/46305ebc6732032ed9d675b44ac8545ae60fc64a))
+* allow unsigned assertions ([#104](https://github.com/auth0/node-samlp/issues/104)) ([4962ce0](https://github.com/auth0/node-samlp/commit/4962ce00a8d10d6e9a1d0502c642a2251fe7d584))
+
+
+### Bug Fixes
+
+* build fix from merge ([24fa8be](https://github.com/auth0/node-samlp/commit/24fa8bee116379d95053fd4d74ad24dfdfc4ad42))
+* catch possible SAML response signing error ([#112](https://github.com/auth0/node-samlp/issues/112)) ([6cec7bd](https://github.com/auth0/node-samlp/commit/6cec7bde238f2481761b763891160072f13d036c))
+* install updated saml to address issue with malformed pem ([#129](https://github.com/auth0/node-samlp/issues/129)) ([ce5cb5c](https://github.com/auth0/node-samlp/commit/ce5cb5ceaa627596ae114ab81a50464da982ffd4))
+* **nameIdentifierProbes:** better type handling ([#102](https://github.com/auth0/node-samlp/issues/102)) ([88e8b13](https://github.com/auth0/node-samlp/commit/88e8b13d65476bd0a2f6710b4e242ada5a20b18d))
+* remove vulnerable node-saml dependency ([#126](https://github.com/auth0/node-samlp/issues/126)) ([bab5bd0](https://github.com/auth0/node-samlp/commit/bab5bd0468d1234d1fcea52fdb9ebafc3e6032e2))
+* support signed logout resposne sent via POST ([#140](https://github.com/auth0/node-samlp/issues/140)) ([5274d62](https://github.com/auth0/node-samlp/commit/5274d622b1f4cca04790dcf2acf83840c0b592c6))
+* Update saml and ejs dependencies ([#132](https://github.com/auth0/node-samlp/issues/132)) ([26b8cbd](https://github.com/auth0/node-samlp/commit/26b8cbd50bde051e68bcb32fce61421641276b72))
+
+
+* Fix dependency security issues ([#114](https://github.com/auth0/node-samlp/issues/114)) ([26bb934](https://github.com/auth0/node-samlp/commit/26bb9343b1e4893135f467709074a027ea69015a))
+* fix npm audit and library upgrades ([a2688c7](https://github.com/auth0/node-samlp/commit/a2688c702792fba90db4e7c72c463b223498c127))
+* remove ci for node v4, 6, 8, add 14 ([3019b74](https://github.com/auth0/node-samlp/commit/3019b747a0b46f571d4b6a1b3227dec56e7a71d8))
+
 ### [7.1.1](https://github.com/auth0/node-samlp/compare/v7.1.0...v7.1.1) (2023-11-20)
 
 
