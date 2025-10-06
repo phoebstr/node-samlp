@@ -9,15 +9,22 @@
   "scripts": {
     "test": "./node_modules/.bin/_mocha -R spec --colors"
   },
+  "homepage": "https://github.com/phoebstr/node-samlp#readme",
+  "bugs": {
+    "url": "https://github.com/phoebstr/node-samlp/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/auth0/node-samlp.git"
+    "url": "https://github.com/phoebstr/node-samlp.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "saml",
     "auth"
   ],
-  "author": "Auth0",
+  "author": "Structuralapp",
   "license": "mit",
   "dependencies": {
     "@auth0/thumbprint": "0.0.6",
