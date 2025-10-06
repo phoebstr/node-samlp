@@ -14,17 +14,17 @@ describe('samlp', function () {
   var urlEncodedSAMLRequest = 'fZJbc6owFIX%2FCpN3EAEVMmIHEfDaqlCP%2BtKJELkUEkqCl%2F76Uj3O9JyHPmay9l4r%2BVb%2F6VLkwglXLKXEBG1JBgImIY1SEpvgNXBFHTwN%2BgwVeQmtmidkjT9qzLjQzBEGbxcmqCsCKWIpgwQVmEEeQt9azKEiybCsKKchzYFgMYYr3hjZlLC6wJWPq1Ma4tf13AQJ5yWDrVZO45RIDOWYHWkVYimkBRBGjWVKEL%2BlfEhDSjhlVEJNLvlb1%2FqOA4TJyARvynPH80qFFJPAdg%2Fh1fNnGVqpKO3OLkZonUfJ0Nu2Y2t6PdlVPj1RZxVlThywI8rihVH0MuksTQz3sx1Fm2xv5LO9nYSs5KXxfnm364%2FwfMDPWMqn182qHOqpjzR0dncsM6xO1Vs7h860HI97yrB7xHE9dt2loy%2FQu1prie%2FMcuNNL2i6nUdWp%2Fdnk3yekb7dXYhWjFjil%2Br2IC%2Bd%2FexlNF7wS77Zomvo7epFbCuyVx5tq3klYzWeEMYR4SZQ5LYqypqo6IGiQE2FmiKpencPhOXf%2Fx%2Bm5E71N1iHu4jBcRAsxeWLHwBh82hHIwD3LsCbefWjBL%2BvRQ%2FyYPCAd4MmRvgk4kgqrv8R77d%2B2Azup38LOPgC';
 
   before(function (done) {
-    server.start( {
-      audience: 'https://auth0-dev-ed.my.salesforce.com'
-    },done);
+    server.start({
+      audience: 'https://testing.com'
+    }, done);
   });
 
   after(function (done) {
     server.close(done);
   });
 
-  describe('Using custom profile mapper', function() {
-    describe('when NameIdentifier is not found', function(){
+  describe('Using custom profile mapper', function () {
+    describe('when NameIdentifier is not found', function () {
 
       function ProfileMapper(user) {
         this.user = user;
@@ -44,19 +44,19 @@ describe('samlp', function () {
         };
       });
 
-      describe('and nameIdentifierProbes option is array of strings', function(){
+      describe('and nameIdentifierProbes option is array of strings', function () {
         before(function () {
           server.options = Object.assign(server.options, {
             nameIdentifierProbes: ['id', 'email']
           });
         });
 
-        it('should return error containing the list of probes', function(done){
+        it('should return error containing the list of probes', function (done) {
           request.get({
             jar: request.jar(),
             uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-          }, function (err, response){
-            if(err) return done(err);
+          }, function (err, response) {
+            if (err) return done(err);
             expect(response.statusCode).to.equal(400);
             expect(response.body).to.equal('No attribute was found to generate the nameIdentifier. We tried with: id, email');
             done();
@@ -64,20 +64,20 @@ describe('samlp', function () {
         });
       });
 
-      [ undefined, 1, 'a string', { value: 1 } ].forEach(function (testCaseValue) {
-        describe('and nameIdentifierProbes option is not an array, type is ' + (typeof testCaseValue), function(){
+      [undefined, 1, 'a string', { value: 1 }].forEach(function (testCaseValue) {
+        describe('and nameIdentifierProbes option is not an array, type is ' + (typeof testCaseValue), function () {
           before(function () {
             server.options = Object.assign(server.options, {
               nameIdentifierProbes: testCaseValue
             });
           });
 
-          it('should return error without probes', function(done){
+          it('should return error without probes', function (done) {
             request.get({
               jar: request.jar(),
               uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-            }, function (err, response){
-              if(err) return done(err);
+            }, function (err, response) {
+              if (err) return done(err);
               expect(response.statusCode).to.equal(400);
               expect(response.body).to.equal('No attribute was found to generate the nameIdentifier. We tried with: ');
               done();
@@ -96,8 +96,8 @@ describe('samlp', function () {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-      }, function (err, response, b){
-        if(err) return done(err);
+      }, function (err, response, b) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(200);
 
@@ -111,7 +111,7 @@ describe('samlp', function () {
       });
     });
 
-    it('should contain a form in the result', function(){
+    it('should contain a form in the result', function () {
       expect(body).to.match(/<form/);
     });
 
@@ -119,66 +119,66 @@ describe('samlp', function () {
       expect($('input[name="RelayState"]').attr('value')).to.equal('123');
     });
 
-    it('should contain a valid signal assertion', function(){
+    it('should contain a valid signal assertion', function () {
       var isValid = xmlhelper.verifySignature(
-                signedAssertion,
-                server.credentials.cert);
+        signedAssertion,
+        server.credentials.cert);
       expect(isValid).to.be.ok;
     });
 
-    it('should have signature after issuer', function(){
+    it('should have signature after issuer', function () {
       var doc = new xmldom.DOMParser().parseFromString(signedAssertion);
 
       var signature = doc.documentElement.getElementsByTagName('Signature');
       expect(signature[0].previousSibling.nodeName).to.equal('saml:Issuer');
     });
 
-    it('should use sha256 as default signature algorithm', function(){
+    it('should use sha256 as default signature algorithm', function () {
       var algorithm = xmlhelper.getSignatureMethodAlgorithm(signedAssertion);
       expect(algorithm).to.equal('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
     });
 
-    it('should use sha256 as default digest algorithm', function(){
+    it('should use sha256 as default digest algorithm', function () {
       var algorithm = xmlhelper.getDigestMethodAlgorithm(signedAssertion);
       expect(algorithm).to.equal('http://www.w3.org/2001/04/xmlenc#sha256');
     });
 
-    it('should map every attributes from profile', function(){
+    it('should map every attributes from profile', function () {
       function validateAttribute(position, name, value, type, nameFormat) {
 
         expect(attributes[position].getAttribute('Name'))
           .to.equal(name);
         expect(attributes[position].getAttribute('NameFormat'))
-        .to.equal(nameFormat);
+          .to.equal(nameFormat);
         expect(attributes[position].firstChild.getAttribute('xsi:type'))
-        .to.equal(type);
+          .to.equal(type);
         expect(attributes[position].firstChild.textContent)
           .to.equal(value);
       }
 
       validateAttribute(0, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier', String(server.fakeUser.id), 'xs:double', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
-      validateAttribute(1, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',   server.fakeUser.emails[0].value, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
-      validateAttribute(2, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',           server.fakeUser.displayName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
-      validateAttribute(3, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',      server.fakeUser.name.givenName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
-      validateAttribute(4, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',        server.fakeUser.name.familyName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
+      validateAttribute(1, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress', server.fakeUser.emails[0].value, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
+      validateAttribute(2, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name', server.fakeUser.displayName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
+      validateAttribute(3, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname', server.fakeUser.name.givenName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
+      validateAttribute(4, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname', server.fakeUser.name.familyName, 'xs:string', 'urn:oasis:names:tc:SAML:2.0:attrname-format:uri');
     });
 
-    it('should contains the name identifier', function(){
+    it('should contains the name identifier', function () {
       expect(xmlhelper.getNameIdentifier(signedAssertion).textContent)
         .to.equal(String(server.fakeUser.id));
     });
 
-    it('should set nameidentifier format to urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified by default', function(){
+    it('should set nameidentifier format to urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified by default', function () {
       expect(xmlhelper.getNameIdentifier(signedAssertion).getAttribute('Format'))
         .to.equal('urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified');
     });
 
-    it('should contains the issuer', function(){
+    it('should contains the issuer', function () {
       expect(xmlhelper.getIssuer(signedAssertion))
         .to.equal('urn:fixture-test');
     });
 
-    it('should contains the audiences', function(){
+    it('should contains the audiences', function () {
       expect(xmlhelper.getAudiences(signedAssertion)[0].textContent)
         .to.equal('https://auth0-dev-ed.my.salesforce.com');
     });
@@ -201,8 +201,8 @@ describe('samlp', function () {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-      }, function (err, response, b){
-        if(err) return done(err);
+      }, function (err, response, b) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(200);
 
@@ -224,19 +224,20 @@ describe('samlp', function () {
 
   describe('when using an invalid audience', function () {
     before(function () {
-      server.options = { getPostURL: function getPostURL (audience, samlRequestDom, req, callback) {
+      server.options = {
+        getPostURL: function getPostURL(audience, samlRequestDom, req, callback) {
           // return a null post url
           callback(null, null);
         }
       };
     });
 
-    it('should return error', function(done){
+    it('should return error', function (done) {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-      }, function (err, response){
-        if(err) return done(err);
+      }, function (err, response) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(401);
         done();
@@ -252,8 +253,8 @@ describe('samlp', function () {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-      }, function (err, response, b){
-        if(err) return done(err);
+      }, function (err, response, b) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(200);
 
@@ -267,7 +268,7 @@ describe('samlp', function () {
       });
     });
 
-    it('should override nameidentifier format', function(){
+    it('should override nameidentifier format', function () {
       expect(xmlhelper.getNameIdentifier(signedAssertion).getAttribute('Format'))
         .to.equal('urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress');
     });
@@ -289,8 +290,8 @@ describe('samlp', function () {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=fZBPb4MwDMW%2FSuQ7fxrYhCygYqumVeo0VOgOu2U0WpEgYXGo9vGXwdDaS2%2BO7fi990vX333HztJQq1UGKz8EJlWjj636zOBQP3kJrPOURN8NWIz2pPbya5RkmfunCKdBBqNRqAW1hEr0ktA2WBUvO%2BR%2BiIPRVje6A1YQSWOd0KNWNPbSVNKc20Ye9rsMTtYOhEEgGgK2cQqtEnYytUyO%2F01g241zy6P4zpVEo9wqskLZDHi4irww9nhSc45xhDH3o%2BT%2BHVj5Z%2BShVXO8W64%2F5iXC57ouvfK1qoG9LZjcAsxQcBI3FzRunxULAsh%2FY7lUNKTBxaV8fl3Dzn8A&RelayState=123'
-      }, function (err, response, b){
-        if(err) return done(err);
+      }, function (err, response, b) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(200);
 
@@ -303,12 +304,12 @@ describe('samlp', function () {
       });
     });
 
-    it('should send back the ID as InResponseTo', function(){
+    it('should send back the ID as InResponseTo', function () {
       expect(xmlhelper.getSubjectConfirmationData(signedAssertion).getAttribute('InResponseTo'))
         .to.equal('12345');
     });
 
-    it('should send back the ID as InResponseTo', function(){
+    it('should send back the ID as InResponseTo', function () {
       var doc = new xmldom.DOMParser().parseFromString(samlResponse);
       expect(doc.documentElement.getAttribute('InResponseTo')).to.equal('12345');
     });
@@ -321,8 +322,8 @@ describe('samlp', function () {
       request.get({
         jar: request.jar(),
         uri: 'http://localhost:5050/samlp?SAMLRequest=fZBPb4MwDMW%2FSuQ7fxrYhCygYqumVeo0VOgOu2U0WpEgYXGo9vGXwdDaS2%2BO7fi990vX333HztJQq1UGKz8EJlWjj636zOBQP3kJrPOURN8NWIz2pPbya5RkmfunCKdBBqNRqAW1hEr0ktA2WBUvO%2BR%2BiIPRVje6A1YQSWOd0KNWNPbSVNKc20Ye9rsMTtYOhEEgGgK2cQqtEnYytUyO%2F01g241zy6P4zpVEo9wqskLZDHi4irww9nhSc45xhDH3o%2BT%2BHVj5Z%2BShVXO8W64%2F5iXC57ouvfK1qoG9LZjcAsxQcBI3FzRunxULAsh%2FY7lUNKTBxaV8fl3Dzn8A'
-      }, function (err, response, b){
-        if(err) return done(err);
+      }, function (err, response, b) {
+        if (err) return done(err);
         expect(response.statusCode)
           .to.equal(200);
 
@@ -335,42 +336,42 @@ describe('samlp', function () {
       });
     });
 
-    it('should not throw an error', function(){
+    it('should not throw an error', function () {
       expect(xmlhelper.getSubjectConfirmationData(signedAssertion).getAttribute('InResponseTo'))
         .to.equal('12345');
     });
   });
 
-  describe('configured to accept SignedRequest', function(){
+  describe('configured to accept SignedRequest', function () {
     before(function () {
       var cert = fs.readFileSync(path.join(__dirname, '/fixture/samlp.test-cert.pem'));
       server.options = {
-        signingCert:  cert,
-        thumbprints:  [encoder.thumbprint(cert)]
+        signingCert: cert,
+        thumbprints: [encoder.thumbprint(cert)]
       };
     });
 
-    describe('HTTP Redirect', function(){
-      describe('when sending a not signed SAMLRequest', function(){
+    describe('HTTP Redirect', function () {
+      describe('when sending a not signed SAMLRequest', function () {
         var error;
 
         before(function (done) {
           request.get({
             jar: request.jar(),
             uri: 'http://localhost:5050/samlp?SAMLRequest=' + urlEncodedSAMLRequest + '&RelayState=123'
-          }, function (err, response){
-            if(err) return done(err);
+          }, function (err, response) {
+            if (err) return done(err);
             error = response.body;
             done();
           });
         });
 
-        it('return signature missing error', function(){
+        it('return signature missing error', function () {
           expect(error).to.equal("SAMLRequest message MUST be signed when using an asynchronous binding (POST or Redirect)");
         });
       });
 
-      describe('when sending a signed SAMLRequest with ID that doesn\'t match', function(){
+      describe('when sending a signed SAMLRequest with ID that doesn\'t match', function () {
         var error;
 
         before(function (done) {
@@ -383,19 +384,19 @@ describe('samlp', function () {
               RelayState: '123',
               SAMLRequest: new Buffer(SAMLRequest).toString('base64')
             }
-          }, function (err, response){
-            if(err) return done(err);
+          }, function (err, response) {
+            if (err) return done(err);
             error = response.body;
             done();
           });
         });
 
-        it('should return signature check errors', function(){
+        it('should return signature check errors', function () {
           expect(error).to.equal('Signature check errors: invalid signature: the signature refernces an element with uri #pfx41d8ef22-e612-8c50-9960-1b16f15741b3 but could not find such element in the xml');
         });
       });
 
-      describe('when sending a invalid signed SAMLRequest', function(){
+      describe('when sending a invalid signed SAMLRequest', function () {
         var error;
 
         before(function (done) {
@@ -408,19 +409,19 @@ describe('samlp', function () {
               RelayState: '123',
               SAMLRequest: new Buffer(SAMLRequest).toString('base64')
             }
-          }, function (err, response){
-            if(err) return done(err);
+          }, function (err, response) {
+            if (err) return done(err);
             error = response.body;
             done();
           });
         });
 
-        it('should return signature check errors', function(){
+        it('should return signature check errors', function () {
           expect(error).to.equal('Signature check errors: invalid signature: for uri #pfx41d8ef22-e612-8c50-9960-1b16f15741b3 calculated digest is CNSDTrlQsaLjOFN4js626JZBqP0= but the xml to validate supplies digest yJN6cXUwQxTmMEsPesBP2NkqYFI=');
         });
       });
 
-      describe('when sending a valid signed SAMLRequest but wrong certificate', function(){
+      describe('when sending a valid signed SAMLRequest but wrong certificate', function () {
         var error;
 
         before(function (done) {
@@ -433,19 +434,19 @@ describe('samlp', function () {
               RelayState: '123',
               SAMLRequest: new Buffer(SAMLRequest).toString('base64')
             }
-          }, function (err, response){
-            if(err) return done(err);
+          }, function (err, response) {
+            if (err) return done(err);
             error = response.body;
             done();
           });
         });
 
-        it('should return invalid signature', function(){
+        it('should return invalid signature', function () {
           expect(error).to.equal('Signature check errors: invalid signature: the signature value g5eM9yPnKsmmE/Kh2qS7nfK8HoF6yHrAdNQxh70kh8pRI4KaNbYNOL9sF8F57Yd+jO6iNga8nnbwhbATKGXIZOJJSugXGAMRyZsj/rqngwTJk5KmujbqouR1SLFsbo7Iuwze933EgefBbAE4JRI7V2aD9YgmB3socPqAi2Qf97E= is incorrect');
         });
       });
 
-      describe('when sending a valid signed SAMLRequest with embeded cert', function(){
+      describe('when sending a valid signed SAMLRequest with embeded cert', function () {
         var body, samlResponse, signedAssertion, $;
 
         before(function (done) {
@@ -457,8 +458,8 @@ describe('samlp', function () {
               RelayState: '123',
               SAMLRequest: samlRequest
             }
-          }, function (err, response, b){
-            if(err) return done(err);
+          }, function (err, response, b) {
+            if (err) return done(err);
             expect(response.statusCode)
               .to.equal(200);
 
@@ -471,14 +472,14 @@ describe('samlp', function () {
           });
         });
 
-        it('should return invalid signature', function(){
+        it('should return invalid signature', function () {
           expect(signedAssertion).to.be.ok;
         });
       });
     });
 
-    describe('HTTP Redirect - Inflated', function(){
-      describe('when not sending Signature', function(){
+    describe('HTTP Redirect - Inflated', function () {
+      describe('when not sending Signature', function () {
         var error;
 
         before(function (done) {
@@ -494,20 +495,20 @@ describe('samlp', function () {
                 RelayState: '123',
                 SAMLRequest: buffer.toString('base64')
               }
-            }, function (err, response){
-              if(err) return done(err);
+            }, function (err, response) {
+              if (err) return done(err);
               error = response.body;
               done();
             });
           });
         });
 
-        it('should return signature check errors', function(){
+        it('should return signature check errors', function () {
           expect(error).to.equal("SAMLRequest message MUST be signed when using an asynchronous binding (POST or Redirect)");
         });
       });
 
-      describe('when not sending SigAlg', function(){
+      describe('when not sending SigAlg', function () {
         var error;
 
         before(function (done) {
@@ -524,20 +525,20 @@ describe('samlp', function () {
                 SAMLRequest: buffer.toString('base64'),
                 Signature: '123123'
               }
-            }, function (err, response){
-              if(err) return done(err);
+            }, function (err, response) {
+              if (err) return done(err);
               error = response.body;
               done();
             });
           });
         });
 
-        it('should return missing Signature Algorithm message', function(){
+        it('should return missing Signature Algorithm message', function () {
           expect(error).to.equal("Signature Algorithm is missing");
         });
       });
 
-      describe('when sending invalid Sigature Algorithm', function(){
+      describe('when sending invalid Sigature Algorithm', function () {
         var error;
 
         before(function (done) {
@@ -555,20 +556,20 @@ describe('samlp', function () {
                 Signature: '123123',
                 SigAlg: '123'
               }
-            }, function (err, response){
-              if(err) return done(err);
+            }, function (err, response) {
+              if (err) return done(err);
               error = response.body;
               done();
             });
           });
         });
 
-        it('should return invalid Signature Algorithm message', function(){
+        it('should return invalid Signature Algorithm message', function () {
           expect(error).to.equal("Invalid signature algorithm. Supported algorithms are http://www.w3.org/2001/04/xmldsig-more#rsa-sha1 and http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
         });
       });
 
-      describe('when valid algorithm and invalid signature', function(){
+      describe('when valid algorithm and invalid signature', function () {
         var error;
 
         before(function (done) {
@@ -586,20 +587,20 @@ describe('samlp', function () {
                 Signature: '123123',
                 SigAlg: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
               }
-            }, function (err, response){
-              if(err) return done(err);
+            }, function (err, response) {
+              if (err) return done(err);
               error = response.body;
               done();
             });
           });
         });
 
-        it('should return missing signature check errors', function(){
+        it('should return missing signature check errors', function () {
           expect(error).to.equal("Signature check errors: The signature provided (123123) does not match the one calculated");
         });
       });
 
-      describe('when valid signature and algorithm', function(){
+      describe('This works on Node16, but breaks on Node 24... when valid signature and algorithm', function () {
         var body, samlResponse, signedAssertion, $;
 
         before(function (done) {
@@ -607,7 +608,6 @@ describe('samlp', function () {
 
           zlib.deflateRaw(new Buffer(SAMLRequest), function (err, buffer) {
             if (err) return done(err);
-
             request.get({
               jar: request.jar(),
               uri: 'http://localhost:5050/samlp',
@@ -617,23 +617,23 @@ describe('samlp', function () {
                 Signature: 'HaX739zOyRn4PR2pi1Bud05rHbPGfppz5x5crr2EuOzLbfNuvLeK//ZCNsC/R/8B4CWe2SYYCYJ6UhBRvhCx8G7H92TIw8TjbsTfAWemp6mJh+zBqaI2It8sFZMYntsbd0jfBo4CbuM8872cNQkdedV5V56gaErjBA8z3HoyTWpQi9nH2fjtmDDfoQmoVum5q+vgbm103qxjH0j/gR+OXi5Rne8ijMLhhXgt9EdLmN8OS6l1LRUPe3XDLz6ZKbo9T2k6GR1x+w6bN18JOdeCwDn+nx4fmPbGGrcz/DT/3mTL5MY7TeRDz8rGSCZ5+yDNtmgQ9Nv2O//joonmRBkF6Q==',
                 SigAlg: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
               }
-            }, function (err, response, b){
-                if(err) return done(err);
+            }, function (err, response, b) {
+              if (err) return done(err);
 
-                expect(response.statusCode)
-                  .to.equal(200);
+              expect(response.statusCode)
+                .to.equal(200);
 
-                body = b;
-                $ = cheerio.load(body);
-                var SAMLResponse = $('input[name="SAMLResponse"]').attr('value');
-                samlResponse = new Buffer(SAMLResponse, 'base64').toString();
-                signedAssertion = /(<saml:Assertion.*<\/saml:Assertion>)/.exec(samlResponse)[1];
-                done();
+              body = b;
+              $ = cheerio.load(body);
+              var SAMLResponse = $('input[name="SAMLResponse"]').attr('value');
+              samlResponse = new Buffer(SAMLResponse, 'base64').toString();
+              signedAssertion = /(<saml:Assertion.*<\/saml:Assertion>)/.exec(samlResponse)[1];
+              done();
             });
           });
         });
 
-        it('should return assertion', function(){
+        it('should return assertion', function () {
           expect(signedAssertion).to.be.ok;
         });
       });
@@ -654,7 +654,7 @@ describe('samlp', function () {
     }
 
     function doSAMLRequest(testSamlResponse) {
-      doRawSAMLRequest(function(response) {
+      doRawSAMLRequest(function (response) {
         expect(response.statusCode).to.equal(200);
 
         var SAMLResponse = cheerio.load(response.body)('input[name="SAMLResponse"]').attr('value');
@@ -687,7 +687,7 @@ describe('samlp', function () {
         it('should return an error', function (done) {
           doRawSAMLRequest(function (response) {
             expect(response.statusCode).to.equal(400);
-            expect(response.body).to.match(/error:\w+:PEM routines:\w+:no start line/);
+            expect(response.body).to.match(/error:0909006C:PEM routines:get_name:no start line/);
             done();
           });
         });
@@ -736,7 +736,7 @@ describe('samlp', function () {
         it('should return an error', function (done) {
           doRawSAMLRequest(function (response) {
             expect(response.statusCode).to.equal(400);
-            expect(response.body).to.match(/error:\w+:PEM routines:\w+:no start line/);
+            expect(response.body).to.match(/error:0909006C:PEM routines:get_name:no start line/);
             done();
           });
         });
@@ -774,17 +774,17 @@ describe('samlp', function () {
     });
   });
 
-  describe('configured signature signatureNamespacePrefix', function(){
-    describe('signResponse = true', function(){
+  describe('configured signature signatureNamespacePrefix', function () {
+    describe('signResponse = true', function () {
       var body, $, signedAssertion, samlResponse;
 
       before(function (done) {
-        server.options = {  signatureNamespacePrefix: 'ds' , signResponse : true };
+        server.options = { signatureNamespacePrefix: 'ds', signResponse: true };
         request.get({
           jar: request.jar(),
           uri: 'http://localhost:5050/samlp?SAMLRequest=fZBPb4MwDMW%2FSuQ7fxrYhCygYqumVeo0VOgOu2U0WpEgYXGo9vGXwdDaS2%2BO7fi990vX333HztJQq1UGKz8EJlWjj636zOBQP3kJrPOURN8NWIz2pPbya5RkmfunCKdBBqNRqAW1hEr0ktA2WBUvO%2BR%2BiIPRVje6A1YQSWOd0KNWNPbSVNKc20Ye9rsMTtYOhEEgGgK2cQqtEnYytUyO%2F01g241zy6P4zpVEo9wqskLZDHi4irww9nhSc45xhDH3o%2BT%2BHVj5Z%2BShVXO8W64%2F5iXC57ouvfK1qoG9LZjcAsxQcBI3FzRunxULAsh%2FY7lUNKTBxaV8fl3Dzn8A&RelayState=123'
-        }, function (err, response, b){
-          if(err) return done(err);
+        }, function (err, response, b) {
+          if (err) return done(err);
           expect(response.statusCode)
             .to.equal(200);
 
@@ -797,23 +797,23 @@ describe('samlp', function () {
         });
       });
 
-      it('should return signature with the specified signatureNamespacePrefix inside the response', function(){
+      it('should return signature with the specified signatureNamespacePrefix inside the response', function () {
         var doc = new xmldom.DOMParser().parseFromString(samlResponse);
         var signature = doc.documentElement.getElementsByTagName('ds:Signature');
         expect(signature[0].parentNode.nodeName).to.equal('samlp:Response');
       });
     });
 
-    describe('signResponse = false', function(){
+    describe('signResponse = false', function () {
       var body, $, signedAssertion, samlResponse;
 
       before(function (done) {
-        server.options = {  signatureNamespacePrefix: 'ds' , signResponse : false };
+        server.options = { signatureNamespacePrefix: 'ds', signResponse: false };
         request.get({
           jar: request.jar(),
           uri: 'http://localhost:5050/samlp?SAMLRequest=fZBPb4MwDMW%2FSuQ7fxrYhCygYqumVeo0VOgOu2U0WpEgYXGo9vGXwdDaS2%2BO7fi990vX333HztJQq1UGKz8EJlWjj636zOBQP3kJrPOURN8NWIz2pPbya5RkmfunCKdBBqNRqAW1hEr0ktA2WBUvO%2BR%2BiIPRVje6A1YQSWOd0KNWNPbSVNKc20Ye9rsMTtYOhEEgGgK2cQqtEnYytUyO%2F01g241zy6P4zpVEo9wqskLZDHi4irww9nhSc45xhDH3o%2BT%2BHVj5Z%2BShVXO8W64%2F5iXC57ouvfK1qoG9LZjcAsxQcBI3FzRunxULAsh%2FY7lUNKTBxaV8fl3Dzn8A&RelayState=123'
-        }, function (err, response, b){
-          if(err) return done(err);
+        }, function (err, response, b) {
+          if (err) return done(err);
           expect(response.statusCode)
             .to.equal(200);
 
@@ -826,23 +826,23 @@ describe('samlp', function () {
         });
       });
 
-      it('should return signature with the specified signatureNamespacePrefix inside the assertion', function(){
+      it('should return signature with the specified signatureNamespacePrefix inside the assertion', function () {
         var doc = new xmldom.DOMParser().parseFromString(signedAssertion);
         var signature = doc.documentElement.getElementsByTagName('ds:Signature');
         expect(signature[0].parentNode.nodeName).to.equal('saml:Assertion');
       });
     });
 
-    describe('invalid signatureNamespacePrefix', function(){
+    describe('invalid signatureNamespacePrefix', function () {
       var body, $, signedAssertion, samlResponse;
 
       before(function (done) {
-        server.options = {  signatureNamespacePrefix: 123 , signResponse : false };
+        server.options = { signatureNamespacePrefix: 123, signResponse: false };
         request.get({
           jar: request.jar(),
           uri: 'http://localhost:5050/samlp?SAMLRequest=fZBPb4MwDMW%2FSuQ7fxrYhCygYqumVeo0VOgOu2U0WpEgYXGo9vGXwdDaS2%2BO7fi990vX333HztJQq1UGKz8EJlWjj636zOBQP3kJrPOURN8NWIz2pPbya5RkmfunCKdBBqNRqAW1hEr0ktA2WBUvO%2BR%2BiIPRVje6A1YQSWOd0KNWNPbSVNKc20Ye9rsMTtYOhEEgGgK2cQqtEnYytUyO%2F01g241zy6P4zpVEo9wqskLZDHi4irww9nhSc45xhDH3o%2BT%2BHVj5Z%2BShVXO8W64%2F5iXC57ouvfK1qoG9LZjcAsxQcBI3FzRunxULAsh%2FY7lUNKTBxaV8fl3Dzn8A&RelayState=123'
-        }, function (err, response, b){
-          if(err) return done(err);
+        }, function (err, response, b) {
+          if (err) return done(err);
           expect(response.statusCode)
             .to.equal(200);
 
@@ -855,7 +855,7 @@ describe('samlp', function () {
         });
       });
 
-      it('should return signature without signatureNamespacePrefix inside the assertion', function(){
+      it('should return signature without signatureNamespacePrefix inside the assertion', function () {
         var doc = new xmldom.DOMParser().parseFromString(signedAssertion);
         var signature = doc.documentElement.getElementsByTagName('Signature');
         expect(signature[0].parentNode.nodeName).to.equal('saml:Assertion');
