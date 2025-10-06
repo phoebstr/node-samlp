@@ -2,7 +2,7 @@
   "name": "@Structuralapp/samlp",
   "version": "8.0.0",
   "engines": {
-    "node": ">=24"
+    "node": ">=20"
   },
   "description": "SAML Protocol server middleware. See https://github.com/auth0/node-samlp.git for original package",
   "main": "lib/index.js",

@@ -1,6 +1,9 @@
+# This is simply a fork to fix underlining security vulnerabilities due to outdated packages. If you want a feature, feel free to open a PR. 
+
 SAML Protocol middleware to create SAMLP identity providers for node.js.
 
-![Build Status](https://github.com/auth0/node-samlp/workflows/Tests/badge.svg)
+Original package: https://github.com/auth0/node-samlp
+
 
 ## Installation
 
@@ -8,7 +11,7 @@ SAML Protocol middleware to create SAMLP identity providers for node.js.
 
 ### Supported Node Versions
 
-node >= 12
+node >= 20
 
 ## Introduction
 
