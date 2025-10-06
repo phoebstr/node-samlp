@@ -1,6 +1,6 @@
 {
   "name": "@Structuralapp/samlp",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "engines": {
     "node": ">=20"
   },
@@ -17,9 +17,6 @@
     "type": "git",
     "url": "https://github.com/phoebstr/node-samlp.git"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "keywords": [
     "saml",
     "auth"
@@ -29,14 +26,14 @@
   "dependencies": {
     "@auth0/thumbprint": "0.0.6",
     "auth0-id-generator": "0.2.0",
-    "ejs": "3.1.8",
-    "flowstate": "0.4.0",
-    "querystring": "0.2.0",
+    "ejs": "3.1.10",
+    "flowstate": "0.6.0",
+    "querystring": "0.2.1",
     "saml": "3.0.1",
     "xml-crypto": "2.1.6",
-    "@auth0/xmldom": "0.1.21",
-    "xpath": "0.0.5",
-    "xtend": "1.0.3"
+    "@auth0/xmldom": "0.1.23",
+    "xpath": "0.0.34",
+    "xtend": "4.0.2"
   },
   "devDependencies": {
     "body-parser": "1.15.2",
