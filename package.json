@@ -2,7 +2,7 @@
   "name": "auth0-samlp",
   "version": "8.0.2",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "description": "SAML Protocol server middleware. See https://github.com/auth0/node-samlp.git for original package",
   "main": "lib/index.js",
